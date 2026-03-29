@@ -45,10 +45,13 @@ export default function Home() {
     files.forEach((file) => formData.append("files", file));
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/upload_multiple_pos", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/upload_multiple_pos`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
 
       if (!res.ok) throw new Error(`Upload failed with status ${res.status}`);
 
