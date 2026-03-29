@@ -18,6 +18,7 @@ origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://sap-woad.vercel.app",
+    "*",
    
 ]
 
@@ -134,6 +135,10 @@ def clean_json(response_text):
         return json.loads(cleaned)
     except:
         return None
+
+@app.get("/")
+async def root():
+    return {"message": "Backend is running 🚀"}        
 
 # ------------------- MULTIPLE PO ROUTE -------------------
 @app.post("/upload_multiple_pos")
