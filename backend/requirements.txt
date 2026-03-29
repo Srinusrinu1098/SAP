@@ -4,5 +4,6 @@ rapidfuzz
 fastapi
 uvicorn
 python-dotenv
-google-generativeai
 openpyxl
+python-multipart
+google-genai
