@@ -14,11 +14,15 @@ model = genai.GenerativeModel("gemini-2.5-flash")
 
 app = FastAPI()
 
-
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "*",  # allow all origins (optional)
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://sap-woad.vercel.app"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -135,6 +139,7 @@ def clean_json(response_text):
 async def upload_multiple_pos(files: list[UploadFile] = File(...)):
     temp_paths = []
     all_rows = []
+    print("working")
 
     po_counter = {}
     current_sales_order = 1
