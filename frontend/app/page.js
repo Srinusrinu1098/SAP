@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { AiOutlineUpload } from "react-icons/ai";
 import { FaSpinner } from "react-icons/fa";
 import { useRouter } from "next/navigation";
@@ -11,23 +11,38 @@ export default function Home() {
   const [success, setSuccess] = useState(false);
   const [alertCount, setAlertCount] = useState(0);
 
+  const fileInputRef = useRef(null);
   const router = useRouter();
 
   const alertMessages = [
-    "broo first files upload madooo 😂",
+    "broo first files upload maaduu 😂",
     "Egaaa Thanee heledheni File upload maaddu anthaa 🤣🤣",
-    "Broo nandhuu broo thapuu nenkosaraa work easy madaadoonaa anukoneaa nodu😑😑",
-    "Inuu adhiiaaa tharaa madedhiyaaa andreaaa confirm nenu Baby Class Indhaa start madbeku 😆😆",
-    "Inu Last One chance magaa focus maduu try to upload 🙃🙃",
-    "By Mistick Agii nenu mathee edheeaa tharaa madedreaa Mareyadheaa thageteni 😆🤣😂",
+    "Inu Last One chance broo focus maduu try to upload 🙃🙃",
   ];
+
+  // ✅ FILE HANDLER (FILTER FOLDERS)
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+
+    const onlyFiles = selectedFiles.filter(
+      (file) => file.type !== "" && file.size > 0,
+    );
+
+    if (onlyFiles.length !== selectedFiles.length) {
+      alert("Please select files only, not folders 📁❌");
+    }
+
+    setFiles(onlyFiles);
+    setSuccess(false);
+  };
 
   const handleUpload = async () => {
     if (!files.length) {
-      if (alertCount >= 6) {
-        router.push("/surprise"); // redirect after 10 failed attempts
+      if (alertCount >= 3) {
+        router.push("/surprise");
         return;
       }
+
       const msg =
         alertCount < alertMessages.length
           ? alertMessages[alertCount]
@@ -53,24 +68,31 @@ export default function Home() {
         },
       );
 
-      if (!res.ok) throw new Error(`Upload failed with status ${res.status}`);
+      if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
 
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
+
       const a = document.createElement("a");
       a.href = url;
       a.download = "SAP_PO_Export.xlsx";
       document.body.appendChild(a);
       a.click();
       a.remove();
+
       window.URL.revokeObjectURL(url);
 
-      setFiles([]); // clear the file list
-      setSuccess(true); // show success message
-      setAlertCount(0); // reset fun alert counter
+      // ✅ RESET EVERYTHING
+      setFiles([]);
+      setSuccess(true);
+      setAlertCount(0);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     } catch (err) {
       console.error("Upload error:", err);
-      alert("Upload failed. Check console for details.");
+      alert("Upload failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -86,11 +108,12 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="flex flex-col items-center justify-center flex-1 py-16 px-6 text-center">
         <h2 className="text-4xl font-bold text-gray-700 mb-4">
           Upload Multiple Purchase Orders Instantly
         </h2>
+
         <p className="text-gray-600 mb-10 max-w-2xl">
           Drag & drop your PO files or select them manually. SmartSAP will
           convert them into SAP-ready Excel sheets in seconds.
@@ -98,22 +121,25 @@ export default function Home() {
 
         {/* Upload Card */}
         <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-lg">
-          <div className="border-2 border-dashed border-blue-300 rounded-xl p-6 text-center cursor-pointer hover:border-blue-500 transition relative">
+          {/* ✅ LABEL BASED INPUT (BEST UX) */}
+          <label className="border-2 border-dashed border-blue-300 rounded-xl p-6 text-center cursor-pointer hover:border-blue-500 transition block">
             <AiOutlineUpload className="mx-auto text-5xl text-blue-400 mb-4" />
             <p className="text-gray-500">
               Drag & drop files here or click to select
             </p>
+
             <input
+              ref={fileInputRef}
               type="file"
               multiple
-              className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
-              onChange={(e) => setFiles(Array.from(e.target.files))}
+              className="hidden"
+              onChange={handleFileChange}
             />
-          </div>
+          </label>
 
-          {/* Selected Files List or Success Message */}
+          {/* File List */}
           {files.length > 0 && !success && (
-            <ul className="mt-4 text-gray-700 list-none text-left">
+            <ul className="mt-4 text-gray-700 text-left max-h-40 overflow-y-auto">
               {files.map((file, idx) => (
                 <li
                   key={idx}
@@ -125,12 +151,14 @@ export default function Home() {
             </ul>
           )}
 
+          {/* Success Message */}
           {success && (
-            <div className="mt-4 py-2 px-4 bg-green-100 rounded text-green-700 font-semibold animate-bounce">
-              ✅ Your file has been downloaded! Please check your downloads.
+            <div className="mt-4 py-2 px-4 bg-green-100 rounded text-green-700 font-semibold">
+              ✅ File downloaded successfully! Check your downloads.
             </div>
           )}
 
+          {/* Upload Button */}
           <button
             onClick={handleUpload}
             disabled={loading}
